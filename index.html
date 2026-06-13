@@ -39,17 +39,6 @@
             flex: 1;
         }
         
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-        
         .status-bar {
             margin-top: 15px;
             padding: 10px;
@@ -71,10 +60,7 @@
             <button class="btn btn-primary btn-sm" id="newBtn">New</button>
             <button class="btn btn-success btn-sm" id="saveBtn">Save</button>
             <button class="btn btn-info btn-sm" id="downloadBtn">Download</button>
-            <div class="file-input-wrapper">
-                <button class="btn btn-secondary btn-sm">Load</button>
-                <input type="file" id="loadBtn" accept=".yaml,.yml" />
-            </div>
+            <button class="btn btn-secondary btn-sm" id="loadBtn">Load</button>
             <span id="filename" class="ms-auto align-self-center text-muted"></span>
         </div>
 
@@ -85,6 +71,26 @@
         </div>
     </div>
 
+    <!-- Load File Modal -->
+    <div class="modal fade" id="loadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Load YAML File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="fileList" class="list-group">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
