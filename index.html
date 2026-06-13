@@ -32,11 +32,43 @@
             flex-wrap: wrap;
         }
         
+        .tabs-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .nav-tabs {
+            margin-bottom: 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .tab-pane {
+            height: 100%;
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
         textarea {
             font-family: 'Courier New', monospace;
             font-size: 14px;
             resize: none;
             flex: 1;
+            border: none;
+            padding: 15px;
         }
         
         .status-bar {
@@ -63,7 +95,26 @@
             <span id="filename" class="ms-auto align-self-center text-muted"></span>
         </div>
 
-        <textarea id="editor" class="form-control" spellcheck="false"></textarea>
+        <div class="tabs-container">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="visual-tab" data-bs-toggle="tab" data-bs-target="#visual" type="button" role="tab">Visual</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button" role="tab">Raw</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="visual" role="tabpanel">
+                    <div id="visualContent" style="padding: 15px; overflow-y: auto; flex: 1;">
+                        Visual editor will go here
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="raw" role="tabpanel">
+                    <textarea id="editor" spellcheck="false"></textarea>
+                </div>
+            </div>
+        </div>
 
         <div class="status-bar">
             <span id="status">Ready</span>
