@@ -60,6 +60,11 @@ downloadBtn.addEventListener('click', () => {
     updateStatus(`Downloaded: ${filename}`);
 });
 
+// Load button - open file dialog
+document.querySelector('.file-input-wrapper button').addEventListener('click', () => {
+    loadBtn.click();
+});
+
 // Load button - load YAML file
 loadBtn.addEventListener('change', (e) => {
     const file = e.target.files[0];
