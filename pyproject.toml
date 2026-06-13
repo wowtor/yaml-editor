@@ -1,0 +1,15 @@
+[project]
+name = "yaml-editor"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "wb", email = "20113294+wowtor@users.noreply.github.com"},
+]
+dependencies = []
+requires-python = "==3.14.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
