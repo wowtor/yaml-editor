@@ -1,7 +1,6 @@
 const editor = document.getElementById('editor');
 const newBtn = document.getElementById('newBtn');
 const saveBtn = document.getElementById('saveBtn');
-const downloadBtn = document.getElementById('downloadBtn');
 const loadBtn = document.getElementById('loadBtn');
 const filenameDisplay = document.getElementById('filename');
 const statusDisplay = document.getElementById('status');
@@ -60,27 +59,6 @@ saveBtn.addEventListener('click', () => {
     .catch(error => {
         updateStatus(`Error: ${error.message}`);
     });
-});
-
-// Download button - download as YAML file
-downloadBtn.addEventListener('click', () => {
-    const content = editor.value;
-    if (!content.trim()) {
-        updateStatus('Cannot download empty file');
-        return;
-    }
-    
-    const filename = currentFilename ? `${currentFilename}.yaml` : 'document.yaml';
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    updateStatus(`Downloaded: ${filename}`);
 });
 
 // Load button - show file browser
