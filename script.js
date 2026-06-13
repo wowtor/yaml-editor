@@ -5,6 +5,8 @@ const downloadBtn = document.getElementById('downloadBtn');
 const loadBtn = document.getElementById('loadBtn');
 const filenameDisplay = document.getElementById('filename');
 const statusDisplay = document.getElementById('status');
+const loadModal = new bootstrap.Modal(document.getElementById('loadModal'));
+const fileList = document.getElementById('fileList');
 
 let currentFilename = null;
 let lastSavedContent = '';
@@ -22,7 +24,7 @@ newBtn.addEventListener('click', () => {
     updateStatus('New file created');
 });
 
-// Save button - save to localStorage
+// Save button - save to server
 saveBtn.addEventListener('click', () => {
     if (!currentFilename) {
         currentFilename = prompt('Enter filename (without extension):');
@@ -33,10 +35,31 @@ saveBtn.addEventListener('click', () => {
     }
     
     const content = editor.value;
-    localStorage.setItem(currentFilename, content);
-    lastSavedContent = content;
-    filenameDisplay.textContent = `${currentFilename}.yaml`;
-    updateStatus(`Saved to localStorage: ${currentFilename}`);
+    const filename = `${currentFilename}.yaml`;
+    
+    fetch(`/save`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            filename: filename,
+            content: content
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            lastSavedContent = content;
+            filenameDisplay.textContent = filename;
+            updateStatus(`Saved: ${filename}`);
+        } else {
+            updateStatus(`Error saving: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        updateStatus(`Error: ${error.message}`);
+    });
 });
 
 // Download button - download as YAML file
@@ -60,53 +83,85 @@ downloadBtn.addEventListener('click', () => {
     updateStatus(`Downloaded: ${filename}`);
 });
 
-// Load button - open file dialog
-document.querySelector('.file-input-wrapper button').addEventListener('click', () => {
-    loadBtn.click();
+// Load button - show file browser
+loadBtn.addEventListener('click', () => {
+    loadFileList();
+    loadModal.show();
 });
 
-// Load button - load YAML file
-loadBtn.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+// Load file list from server
+function loadFileList() {
+    fileList.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
     
+    fetch('/files')
+        .then(response => response.json())
+        .then(data => {
+            if (data.files && data.files.length > 0) {
+                fileList.innerHTML = '';
+                data.files.forEach(file => {
+                    if (file.endsWith('.yaml') || file.endsWith('.yml')) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action';
+                        btn.textContent = file;
+                        btn.addEventListener('click', () => openFile(file));
+                        fileList.appendChild(btn);
+                    }
+                });
+                if (fileList.children.length === 0) {
+                    fileList.innerHTML = '<div class="alert alert-info mb-0">No YAML files found</div>';
+                }
+            } else {
+                fileList.innerHTML = '<div class="alert alert-info mb-0">No files found</div>';
+            }
+        })
+        .catch(error => {
+            fileList.innerHTML = `<div class="alert alert-danger mb-0">Error loading files: ${error.message}</div>`;
+        });
+}
+
+// Open file from server
+function openFile(filename) {
     if (editor.value.trim() && editor.value !== lastSavedContent) {
-        if (!confirm('You have unsaved changes. Load file anyway?')) {
-            loadBtn.value = '';
+        if (!confirm('You have unsaved changes. Open file anyway?')) {
             return;
         }
     }
     
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        try {
-            editor.value = event.target.result;
-            currentFilename = file.name.replace(/\.(yaml|yml)$/, '');
-            lastSavedContent = editor.value;
-            filenameDisplay.textContent = file.name;
-            updateStatus(`Loaded: ${file.name}`);
-        } catch (error) {
+    fetch(`/load?file=${encodeURIComponent(filename)}`)
+        .then(response => response.text())
+        .then(content => {
+            editor.value = content;
+            currentFilename = filename.replace(/\.(yaml|yml)$/, '');
+            lastSavedContent = content;
+            filenameDisplay.textContent = filename;
+            updateStatus(`Loaded: ${filename}`);
+            loadModal.hide();
+        })
+        .catch(error => {
             updateStatus(`Error loading file: ${error.message}`);
-        }
-    };
-    reader.readAsText(file);
-    loadBtn.value = '';
-});
+        });
+}
 
-// Load from localStorage on startup
+// Load first file on startup
 window.addEventListener('load', () => {
-    const savedFiles = Object.keys(localStorage);
-    if (savedFiles.length > 0) {
-        const filename = savedFiles[0];
-        const content = localStorage.getItem(filename);
-        editor.value = content;
-        currentFilename = filename;
-        lastSavedContent = content;
-        filenameDisplay.textContent = `${filename}.yaml`;
-        updateStatus(`Loaded from localStorage: ${filename}`);
-    } else {
-        updateStatus('Ready');
-    }
+    fetch('/files')
+        .then(response => response.json())
+        .then(data => {
+            if (data.files && data.files.length > 0) {
+                const yamlFiles = data.files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+                if (yamlFiles.length > 0) {
+                    openFile(yamlFiles[0]);
+                } else {
+                    updateStatus('Ready');
+                }
+            } else {
+                updateStatus('Ready');
+            }
+        })
+        .catch(() => {
+            updateStatus('Ready');
+        });
     editor.focus();
 });
 
