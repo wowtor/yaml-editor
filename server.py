@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime
 
 PORT = 8000
 DIRECTORY = Path(__file__).parent
@@ -18,6 +19,17 @@ DIRECTORY = Path(__file__).parent
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DIRECTORY), **kwargs)
+
+    def log_message(self, format, *args):
+        """Override to add custom logging with timestamps and methods"""
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if len(args) >= 2:
+            method = self.command
+            path = args[0]
+            code = args[1]
+            print(f"[{timestamp}] {method} {path} -> {code}")
+        else:
+            print(f"[{timestamp}] {format % args}")
 
     def do_GET(self):
         parsed_path = urlparse(self.path)
@@ -136,7 +148,8 @@ if __name__ == '__main__':
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
         print(f"🚀 YAML Editor server running at http://localhost:{PORT}")
         print(f"📁 Serving files from: {DIRECTORY}")
-        print("Press Ctrl+C to stop the server")
+        print("📋 Logging all requests...")
+        print("Press Ctrl+C to stop the server\n")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
